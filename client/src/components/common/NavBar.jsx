@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 
-const Navbar = ({ links }) => {
+const NavBar = ({ links = [] }) => {
   return (
     <nav className="bg-white shadow-sm">
       <div className="container mx-auto px-4">
@@ -27,7 +27,7 @@ const Navbar = ({ links }) => {
   );
 };
 
-Navbar.propTypes = {
+NavBar.propTypes = {
   links: PropTypes.arrayOf(
     PropTypes.shape({
       href: PropTypes.string.isRequired,
@@ -36,4 +36,4 @@ Navbar.propTypes = {
   ).isRequired,
 };
 
-export default Navbar;
+export default NavBar;
