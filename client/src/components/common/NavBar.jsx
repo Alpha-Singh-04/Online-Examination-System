@@ -1,24 +1,50 @@
-import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
-const NavBar = ({ links = [] }) => {
+const Navbar = () => {
+  const { isAuthenticated } = useSelector((state) => state.auth);
+
   return (
     <nav className="bg-white shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0">
-            <h1 className="text-xl font-bold">Online Exam System</h1>
+            <Link to="/" className="text-xl font-bold">
+              Online Exam System
+            </Link>
           </div>
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
-              {links.map((link, index) => (
-                <a
-                  key={index}
-                  href={link.href}
-                  className="text-gray-700 hover:text-gray-900"
+              <Link
+                to="/"
+                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Home
+              </Link>
+              
+              {isAuthenticated ? (
+                <Link
+                  to="/dashboard"
+                  className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  {link.label}
-                </a>
-              ))}
+                  Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="bg-indigo-600 text-white hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Register
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -27,13 +53,4 @@ const NavBar = ({ links = [] }) => {
   );
 };
 
-NavBar.propTypes = {
-  links: PropTypes.arrayOf(
-    PropTypes.shape({
-      href: PropTypes.string.isRequired,
-      label: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-};
-
-export default NavBar;
+export default Navbar;
