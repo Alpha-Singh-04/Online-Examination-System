@@ -67,6 +67,19 @@ const Login = () => {
               }}
               errors={errors}
             />
+            
+            <div className="mb-4">
+              <select
+                {...register("role", { required: "Role is required" })}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              >
+                <option value="">Select Role</option>
+                <option value="student">Student</option>
+                <option value="teacher">Teacher</option>
+                <option value="admin">Admin</option>
+              </select>
+              {errors.role && <p className="text-red-500 text-sm mt-1">{errors.role.message}</p>}
+            </div>
           </div>
 
           <div>

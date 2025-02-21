@@ -8,9 +8,9 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import Dashboard from './pages/dashboard/Dashboard';
-import TestComponent from './components/TestComponent'
 import Header from './components/dashboard/Header';
 import Sidebar from './components/dashboard/Sidebar';
+import Navbar from './components/common/NavBar';
 
 function App() {
   return (
@@ -21,10 +21,12 @@ function App() {
         </Route>
         
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
         
+        //to check the componEnts only
+        <Route path="/register" element={<Register />} />
         <Route path="/header" element={<Header />} />
         <Route path="/sidebar" element={<Sidebar />} />
+        <Route path="/navbar" element={<Navbar />} />
 
         <Route
           path="/dashboard"
@@ -44,10 +46,5 @@ function App() {
     </Router>
   );
 }
-
-
-// function App() {
-//   return <TestComponent />
-// }
 
 export default App;
