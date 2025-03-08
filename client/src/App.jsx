@@ -5,12 +5,14 @@ import RootLayout from './layouts/RootLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
+import Dashboard from './pages/dashboard/Dashboard';
+
+/*
 import Register from './pages/auth/Register';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import Dashboard from './pages/dashboard/Dashboard';
 import Header from './components/dashboard/Header';
 import Sidebar from './components/dashboard/Sidebar';
-// import Navbar from './components/common/NavBar ';
+*/
 
 function App() {
   return (
@@ -22,12 +24,6 @@ function App() {
         
         <Route path="/login" element={<Login />} />
         
-        
-        //? to check the components only
-        {/* <Route path="/register" element={<Register />} />
-        <Route path="/header" element={<Header />} />
-        <Route path="/sidebar" element={<Sidebar />} /> */}
-        {/* <Route path="/navbar" element={<Navbar />} /> */}
 
         <Route
           path="/dashboard"

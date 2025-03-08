@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Search, Settings, HelpCircle } from 'lucide-react';
 import PropTypes from 'prop-types';
+import { useProfile } from '../../hooks/useProfile';
 
 const NotificationDropdown = ({ isOpen, notifications, onClearNotifications }) => (
   isOpen && (
@@ -104,6 +106,8 @@ ProfileDropdown.propTypes = {
 
 const Header = ({ collapsed }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { profile } = useProfile();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
@@ -128,7 +132,6 @@ const Header = ({ collapsed }) => {
   useEffect(() => {
     updateTime();
     const interval = setInterval(updateTime, 60000);
-    
     return () => clearInterval(interval);
   }, [updateTime]);
 
@@ -155,9 +158,9 @@ const Header = ({ collapsed }) => {
 
   // Memoized event handlers
   const handleLogout = useCallback(() => {
-    // Add logout logic later
+    dispatch(logout());
     navigate('/login');
-  }, [navigate]);
+  }, [dispatch, navigate]);
   
   const toggleProfileDropdown = useCallback((e) => {
     e.stopPropagation();
@@ -242,21 +245,21 @@ const Header = ({ collapsed }) => {
               <Settings size={18} />
             </button>
             
-            <div className="relative ml-2" ref={profileRef}>
+            <div className="relative" ref={profileRef}>
               <button
-                onClick={toggleProfileDropdown}
+                onClick={toggleProfileDropdown}        
                 className="flex items-center space-x-2 focus:outline-none"
-                aria-label="Profile menu"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center text-white font-medium text-sm border-2 border-white">
-                  JD
+                <span className="text-sm capitalize">{profile?.name}</span>
+                <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center uppercase">
+                  {profile?.name?.charAt(0)}
                 </div>
               </button>
               <ProfileDropdown 
                 isOpen={isProfileOpen} 
-                onLogout={handleLogout}
-                userName="John Doe"
-              />  
+                onLogout={handleLogout} 
+                userName={profile?.name || 'User'}
+              />
             </div>
           </div>
         </div>

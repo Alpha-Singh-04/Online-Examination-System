@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { useDispatch } from 'react-redux';
+import api from '../../../../server/config/axios';
+import { loginSuccess, loginFailure } from '../../redux/features/authSlice';
 
 const FormInput = ({ label, type, register, required, pattern, minLength, errors, icon }) => (
   <div className="relative">
@@ -22,17 +25,27 @@ const FormInput = ({ label, type, register, required, pattern, minLength, errors
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
 
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      console.log('Login data:', data);
-      // API integration will be added later
+      const response = await api.post('/auth/login', data);
+      
+      // Store token in localStorage
+      localStorage.setItem('token', response.data.token);
+      
+      // Dispatch login success action
+      dispatch(loginSuccess(response.data));
+      
+      // Navigate to dashboard based on role
       navigate('/dashboard');
     } catch (error) {
-      console.error('Login error:', error);
-      // Optionally, set an error state to display a message to the user
+      const errorMessage = error.response?.data?.message || 'Login failed';
+      setLoginError(errorMessage);
+      dispatch(loginFailure(errorMessage));
     } finally {
       setIsLoading(false);
     }

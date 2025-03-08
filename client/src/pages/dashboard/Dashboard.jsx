@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useProfile } from '../../hooks/useProfile';
 
 const Dashboard = () => {
+  const { profile, loading, error: profileError } = useProfile();
   const [data, setData] = useState({
     totalTests: 0,
     completedTests: 0,

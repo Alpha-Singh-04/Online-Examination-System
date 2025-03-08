@@ -1,3 +1,4 @@
+const { decrypt } = require('dotenv');
 const User = require('../models/Users');
 const jwt = require('jsonwebtoken');
 
@@ -14,8 +15,20 @@ const login = async (req, res) => {
   try {
     const { email, password, role } = req.body;
 
+    // code for checking
+    console.log(`Login attempt: email=${email}, role=${role}`);
+
     // Check for user
     const user = await User.findOne({ email, role });
+
+    // code for checking
+    if (!user) {
+      console.log('User not found');
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+    console.log('User found:', user);
+    const isPasswordMatch = await user.matchPassword(password);
+    console.log('Password match:', isPasswordMatch);
 
     if (user && (await user.matchPassword(password))) {
       res.json({
@@ -34,7 +47,7 @@ const login = async (req, res) => {
 };
 
 // @desc    Get user profile
-// @route   GET /api/auth/profile
+// @route   GET  /api/auth/profile
 // @access  Private
 const getUserProfile = async (req, res) => {
   try {

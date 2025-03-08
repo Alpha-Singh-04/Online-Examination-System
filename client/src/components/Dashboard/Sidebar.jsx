@@ -248,7 +248,7 @@ const Sidebar = () => {
           </div>
         </nav>
       </div>
-      <Header collapsed={collapsed} />
+      {/* <Header collapsed={collapsed} /> */}
     </div>
   );
 };
