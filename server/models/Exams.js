@@ -16,6 +16,17 @@ const examSchema = new mongoose.Schema({
   startTime: { type: Date, required: true },
   endTime: { type: Date, required: true },
   createdAt: { type: Date, default: Date.now },
+  submissions: {
+    type: [
+      {
+        student: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        answers: [{ type: String }],
+        score: { type: Number, default: 0 },
+        submittedAt: { type: Date, default: Date.now },
+      }
+    ],
+    default: [],
+  }
 });
 
 module.exports = mongoose.model("Exam", examSchema);

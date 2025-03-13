@@ -23,6 +23,13 @@ const TakeTest = () => {
     try {
       setLoading(true);
       const response = await axios.get(`/api/tests/${testId}/take`);
+      
+      // Convert startTime and endTime to calculate timeLeft
+      const now = new Date();
+      const startTime = new Date(testData.startTime);
+      const endTime = new Date(testData.endTime);
+      const remainingTime = Math.max((endTime - now) / 1000, 0);
+
       setTest(response.data);
       setTimeLeft(response.data.duration * 60);
       setAnswers(response.data.savedAnswers || response.data.questions.reduce((acc, q) => ({ ...acc, [q._id]: null }), {}));
@@ -110,7 +117,7 @@ const TakeTest = () => {
       exitFullscreen();
 
       const payload = {
-        answers,
+        answers: Object.values(answers), // Send as an array of selected strings
         violations: violations.length,
         violationDetails: violations,
         timeSpent: test.duration * 60 - timeLeft,

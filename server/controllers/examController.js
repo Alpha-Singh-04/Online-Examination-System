@@ -81,4 +81,47 @@ const deleteExamById = async (req, res) => {
   }
 };
 
-module.exports = { createExam, getAllExams, getExamById, updateExamById, deleteExamById };
+
+
+// Student submits an exam
+const submitExam = async (req, res) => {
+  try {
+    const { answers } = req.body;
+    const { examId } = req.params;
+    const studentId = req.user.id;
+
+    const exam = await Exam.findById(examId);
+    if (!exam) return res.status(404).json({ msg: "Exam not found" });
+
+    console.log("Exam found:", exam);
+
+    // Ensure `submissions` is an array
+    if (!Array.isArray(exam.submissions)) {
+      exam.submissions = []; // Initialize if undefined
+    }
+
+    console.log("Submissions before push:", exam.submissions);
+
+    // Auto-grading
+    let score = 0;
+    for (let i = 0; i < exam.questions.length; i++) {
+      if (answers[i] === exam.questions[i].correctAnswer) {
+        score++;
+      }
+    }
+
+    // Store the submission
+    exam.submissions.push({
+      student: studentId,
+      answers,
+      score,
+    });
+
+    await exam.save();
+    res.json({ msg: "Exam submitted successfully!", score });
+  } catch (error) {
+    res.status(500).json({ msg: "Server error", error: error.message });
+  }
+};
+
+module.exports = { createExam, getAllExams, getExamById, updateExamById, deleteExamById, submitExam };

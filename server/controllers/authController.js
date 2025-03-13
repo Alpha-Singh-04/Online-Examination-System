@@ -15,20 +15,21 @@ const login = async (req, res) => {
   try {
     const { email, password, role } = req.body;
 
-    // code for checking
-    console.log(`Login attempt: email=${email}, role=${role}`);
-
     // Check for user
     const user = await User.findOne({ email, role });
 
-    // code for checking
+    /*
+    code for checking
+
     if (!user) {
       console.log('User not found');
       return res.status(401).json({ message: 'Invalid email or password' });
     }
-    console.log('User found:', user);
+
     const isPasswordMatch = await user.matchPassword(password);
-    console.log('Password match:', isPasswordMatch);
+    console.log(`Password match:`, isPasswordMatch);
+    */
+
 
     if (user && (await user.matchPassword(password))) {
       res.json({
