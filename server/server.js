@@ -4,6 +4,7 @@ const connectDB = require("./config/db");
 const dotenv = require("dotenv");
 const authRoutes = require("./routes/authRoutes");
 const examRoutes = require("./routes/examRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 
 const app = express();
@@ -17,6 +18,7 @@ app.use(cors());
 app.use(express.json());
 
 //Routes
+app.use("/api/admin", adminRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/exams", examRoutes);
 

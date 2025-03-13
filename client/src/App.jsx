@@ -9,6 +9,7 @@ import Dashboard from './pages/dashboard/Dashboard';
 
 import CreateTest from './pages/teacher/CreateTest';
 import TakeTest from './pages/student/TakeTest';
+import AdminDashboard from './pages/dashboard/AdminDashboard';
 
 /*
 import Register from './pages/auth/Register';
@@ -29,6 +30,7 @@ function App() {
         
         <Route path='/createTest' element={<CreateTest />} />
         <Route path='/takeTest' element={<TakeTest />} />
+        <Route path='/adminDashboard' element={<AdminDashboard />} />
 
         <Route
           path="/dashboard"

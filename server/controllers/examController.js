@@ -124,4 +124,36 @@ const submitExam = async (req, res) => {
   }
 };
 
-module.exports = { createExam, getAllExams, getExamById, updateExamById, deleteExamById, submitExam };
+// Student review an exam
+const getExamHistory = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    console.log(`Student's ID: ${studentId}`);
+
+    const exams = await Exam.find({ "submissions.student": studentId })
+      .populate("submissions.student", "name")
+      .select("title subject submissions");
+
+      console.log(`Exams found: ${exams}`);
+
+    const studentExams = exams.map((exam) => {
+      const studentSubmission = exam.submissions.find(
+        (sub) => sub.student._id.toString() === studentId
+      );
+      return {
+        examTitle: exam.title,
+        subject: exam.subject,
+        score: studentSubmission.score,
+        submittedAt: studentSubmission.submittedAt,
+      };
+    });
+
+    res.json(studentExams);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ msg: "Server error", error: error.message });
+  }
+};
+
+
+module.exports = { createExam, getAllExams, getExamById, updateExamById, deleteExamById, submitExam, getExamHistory };
