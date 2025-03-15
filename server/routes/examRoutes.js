@@ -24,7 +24,7 @@ router.delete("/:id", protect, authorize("teacher"), deleteExamById);
 router.post("/submit/:examId", protect, authorize("student"), submitExam);
 
 // Student review an exam
-router.get("/review", protect, authorize("student"), getExamHistory);
+router.get("/:examId/review", protect, authorize("student"), getExamHistory);
 
 
 module.exports = router;

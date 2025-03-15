@@ -62,4 +62,4 @@ const getTeacherById = async (req, res) => {
 };
 */
 
-module.exports = { getAllUsers, getAllExams, getUserById, getExamById, getTeacherById };
+module.exports = { getAllUsers, getAllExams, getUserById, getExamById};

@@ -128,14 +128,21 @@ const submitExam = async (req, res) => {
 const getExamHistory = async (req, res) => {
   try {
     const studentId = req.user.id;
-    console.log(`Student's ID: ${studentId}`);
+    const examId = req.params.examId;
 
-    const exams = await Exam.find({ "submissions.student": studentId })
+    // console.log(`Student's ID Before : ${studentId}`);
+
+    const exams = await Exam.findOne({ _id: examId, "submissions.student": studentId })
       .populate("submissions.student", "name")
       .select("title subject submissions");
 
       console.log(`Exams found: ${exams}`);
+      if(!exams) {
+        return res.status(404).json({ msg: "No exam history found for this student." });
+      }
 
+
+    /*
     const studentExams = exams.map((exam) => {
       const studentSubmission = exam.submissions.find(
         (sub) => sub.student._id.toString() === studentId
@@ -143,12 +150,30 @@ const getExamHistory = async (req, res) => {
       return {
         examTitle: exam.title,
         subject: exam.subject,
-        score: studentSubmission.score,
-        submittedAt: studentSubmission.submittedAt,
+        score: studentSubmission?.score || "N/A",
+        submittedAt: studentSubmission?.submittedAt || "N/A",
       };
     });
+    */
 
-    res.json(studentExams);
+
+    // Find the specific student's submission
+    const studentSubmission = exams.submissions.find(
+      (sub) => sub.student._id.toString() === studentId
+    );
+
+    if (!studentSubmission) {
+      return res.status(404).json({ msg: "No submission found for this student in this exam." });
+    }
+
+    const studentExamHistory = {
+      examTitle: exams.title,
+      subject: exams.subject,
+      score: studentSubmission.score || "N/A",
+      submittedAt: studentSubmission.submittedAt || "N/A",
+    };
+
+    res.json(studentExamHistory);
   } catch (error) {
     console.log(error);
     res.status(500).json({ msg: "Server error", error: error.message });
