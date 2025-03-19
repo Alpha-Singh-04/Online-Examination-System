@@ -11,6 +11,7 @@ import CreateTest from './pages/teacher/CreateTest';
 import TakeTest from './pages/student/TakeTest';
 import AdminDashboard from './pages/dashboard/AdminDashboard';
 import TestMonitor from './components/TestMonitor';
+import ResultsDashboard from './pages/Results/ResultsDashboard';
 
 /*
 import Register from './pages/auth/Register';
@@ -33,6 +34,7 @@ function App() {
         <Route path='/takeTest' element={<TakeTest />} />
         <Route path='/adminDashboard' element={<AdminDashboard />} />
         <Route path='/testMonitor' element={<TestMonitor />} />
+        <Route path='/resultDashboard' element={<ResultsDashboard />} />
 
         <Route
           path="/dashboard"
