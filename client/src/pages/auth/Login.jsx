@@ -36,12 +36,19 @@ const Login = () => {
       
       // Store token in localStorage
       localStorage.setItem('token', response.data.token);
-      
+      console.log(response.data);
       // Dispatch login success action
       dispatch(loginSuccess(response.data));
       
       // Navigate to dashboard based on role
-      navigate('/dashboard');
+      if(response.data.role === 'admin'){
+        navigate('/adminDashboard');
+      }else if(response.data.role === 'teacher'){
+        navigate('/dashboard');
+      }else if(response.data.role === 'student'){
+        navigate('/dashboard');
+      }
+      
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'Login failed';
       setLoginError(errorMessage);
