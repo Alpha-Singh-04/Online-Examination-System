@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Sidebar from '../components/dashboard/Sidebar';
 import Header from '../components/dashboard/Header';
 
 const DashboardLayout = () => {
   const [loading, setLoading] = useState(true);
+  const { user } = useSelector((state) => state.auth);
+  const [collapsed, setCollapsed] = useState(false); // ✅ Add state for collapsed sidebar
 
   useEffect(() => {
     // Simulate loading state for smooth transition
@@ -26,11 +29,16 @@ const DashboardLayout = () => {
     );
   }
 
+  // If no user is found, redirect to login
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      <Header />
+      <Header collapsed={collapsed} />
       <div className="flex flex-1">
-        <Sidebar />
+        <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
         <main className="flex-1 p-6 bg-gray-50 overflow-auto">
           <div className="container mx-auto">
             <Outlet />

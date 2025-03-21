@@ -1,8 +1,8 @@
 
 const PDFDocument = require('pdfkit');
-const Test = require('../models/Test');
-const Submission = require('../models/Submission');
-const User = require('../models/User');
+// const Test = require('../models/Test');
+// const Submission = require('../models/Submission');
+const User = require('../models/Users');
 
 exports.generateTestReport = async (req, res) => {
   try {

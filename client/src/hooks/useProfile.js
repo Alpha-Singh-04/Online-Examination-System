@@ -4,7 +4,7 @@ import api from '../../../server/config/axios';
 import { logout } from '../redux/features/authSlice';
 
 export const useProfile = () => {
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState({}); // ✅ Initialize with an empty object
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
@@ -13,14 +13,13 @@ export const useProfile = () => {
     const fetchProfile = async () => {
       try {
         const response = await api.get('/auth/profile');
-        setProfile(response.data);
-        setLoading(false);
+        setProfile(response.data || {}); // ✅ Ensure it's always an object
       } catch (err) {
-        // If token is invalid or expired, logout
         if (err.response && err.response.status === 401) {
           dispatch(logout());
         }
         setError(err.message);
+      } finally {
         setLoading(false);
       }
     };
@@ -30,3 +29,5 @@ export const useProfile = () => {
 
   return { profile, loading, error };
 };
+
+export default useProfile;

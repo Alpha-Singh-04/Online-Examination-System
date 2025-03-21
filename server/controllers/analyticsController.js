@@ -1,7 +1,7 @@
 
-const Test = require('../models/Test');
-const Submission = require('../models/Submission');
-const User = require('../models/User');
+// const Test = require('../models/Test');
+// const Submission = require('../models/Submission');
+const User = require('../models/Users');
 
 exports.getTestAnalytics = async (req, res) => {
   try {

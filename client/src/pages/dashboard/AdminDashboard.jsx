@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react"
 import { useOutletContext } from "react-router-dom"
+import { useDispatch, useSelector } from "react-redux"
 import { Header } from "../../components/adminDashboard/Header"
 import { Sidebar } from "../../components/adminDashboard/Sidebar"
 import { Overview } from "../../components/adminDashboard/Overview"
@@ -9,6 +10,10 @@ import { ExamsTab } from "../../components/adminDashboard/Tabs/ExamsTab"
 import { SettingsTab } from "../../components/adminDashboard/Tabs/SettingsTab"
 
 const AdminDashboard = () => {
+  console.log('AdminDashboard');
+
+  const dispatch = useDispatch();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [users, setUsers] = useState([])
   const [exams, setExams] = useState([])
@@ -22,6 +27,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     setIsVisible(true)
+    if (!user) return;
 
     const fetchData = async () => {
       try {
@@ -45,7 +51,7 @@ const AdminDashboard = () => {
     }
 
     fetchData()
-  }, [])
+  }, [user])
 
   return (
     <div

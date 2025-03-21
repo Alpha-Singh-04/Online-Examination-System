@@ -3,6 +3,8 @@ import { useOutletContext } from 'react-router-dom';
 import { Sparkles, BookOpen, Shield, Brain, ArrowRight, ChevronRight } from 'lucide-react';
 
 const Home = () => {
+  console.log("Home component is rendering"); // Debug log
+
   const { isDarkMode } = useOutletContext();
   const [isHovered, setIsHovered] = useState(null);
   const [isVisible, setIsVisible] = useState(false);

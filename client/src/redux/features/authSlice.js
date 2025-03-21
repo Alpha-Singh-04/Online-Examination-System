@@ -1,11 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { setToken, getToken, removeToken, getUser } from '../../utils/auth'; // Import updated functions
 
-// Check if token exists in localStorage
-const token = localStorage.getItem('token');
+const storedToken = getToken(); // Get token from sessionStorage
+const storedUser = getUser(); // Get user info from sessionStorage
 
 const initialState = {
-  user: null,
-  isAuthenticated: false,
+  user: storedUser,
+  isAuthenticated: !!storedToken, // True if token exists
   loading: false,
   error: null
 };
@@ -14,29 +15,29 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    // Action to start the login process
     loginStart: (state) => {
       state.loading = true;
       state.error = null;
     },
-    // Action to handle successful login
     loginSuccess: (state, action) => {
       state.loading = false;
       state.isAuthenticated = true;
       state.user = action.payload;
       state.error = null;
+
+      setToken(action.payload.token, action.payload); // Store token & user info
     },
-    // Action to handle login failure
     loginFailure: (state, action) => {
       state.loading = false;
       state.error = action.payload;
     },
-    // Action to handle logout
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
       state.loading = false;
       state.error = null;
+
+      removeToken(); // Clear session data
     }
   }
 });

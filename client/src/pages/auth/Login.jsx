@@ -31,32 +31,47 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     setIsLoading(true);
+    setLoginError(""); // Clear any previous errors
     try {
       const response = await api.post('/auth/login', data);
-      
-      // Store token in localStorage
-      localStorage.setItem('token', response.data.token);
-      console.log(response.data);
-      // Dispatch login success action
-      dispatch(loginSuccess(response.data));
-      
-      // Navigate to dashboard based on role
-      if(response.data.role === 'admin'){
-        navigate('/adminDashboard');
-      }else if(response.data.role === 'teacher'){
-        navigate('/dashboard');
-      }else if(response.data.role === 'student'){
-        navigate('/dashboard');
+  
+      if (!response || !response.data) {
+        throw new Error("Invalid response from server");
       }
-      
+  
+      const { token, role } = response.data;
+  
+      // Store token and role in localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", role); // Store the role
+  
+      // Dispatch Redux login success
+      dispatch(loginSuccess(response.data));
+  
+      console.log("User Role:", role); // Debugging
+  
+      // Redirect based on role
+      if (role === "admin") {
+        navigate("/home", { replace: true });
+      } else if (role === "teacher") {
+        navigate("/teacher/dashboard", { replace: true });
+      } else if (role === "student") {
+        navigate("/student/dashboard", { replace: true });
+      } else {
+        throw new Error("Invalid role received from server");
+      }
+  
     } catch (error) {
-      const errorMessage = error.response?.data?.message || 'Login failed';
-      setLoginError(errorMessage);
-      dispatch(loginFailure(errorMessage));
+      console.error("Login error:", error);
+      setLoginError(error.response?.data?.message || "Login failed");
+      dispatch(loginFailure(error.response?.data?.message || "Login failed"));
     } finally {
       setIsLoading(false);
     }
   };
+  
+  
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">

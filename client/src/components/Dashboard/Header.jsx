@@ -63,7 +63,7 @@ NotificationDropdown.propTypes = {
   onClearNotifications: PropTypes.func.isRequired,
 };
 
-const ProfileDropdown = ({ isOpen, onLogout, userName }) => (
+const ProfileDropdown = ({ isOpen, onLogout, userName, profile }) => (
   isOpen && (
     <div 
       className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-10" 
@@ -72,7 +72,7 @@ const ProfileDropdown = ({ isOpen, onLogout, userName }) => (
     >
       <div className="px-4 py-3 border-b border-gray-200">
         <p className="text-sm font-medium">{userName}</p>
-        <p className="text-xs text-gray-500 mt-1">Student</p>
+        <p className="text-xs text-gray-500 mt-1">{profile?.role || 'User'}</p>
       </div>
       <button
         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
