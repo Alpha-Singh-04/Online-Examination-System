@@ -25,33 +25,56 @@ const AdminDashboard = () => {
     setIsDarkMode((prev) => !prev)
   }
 
+  
   useEffect(() => {
-    setIsVisible(true)
+    setIsVisible(true);
     if (!user) return;
-
+  
     const fetchData = async () => {
+      const token = localStorage.getItem("token");
+      console.log("Admin token:", token); // Confirm token exists
+  
+      if (!token) {
+        console.error("No token found.");
+        return;
+      }
+  
       try {
         const usersResponse = await fetch("/api/admin/users", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        })
-        const usersData = await usersResponse.json()
-
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const usersData = await usersResponse.json();
+        console.log("Users data:", usersData);
+        setUsers(Array.isArray(usersData) ? usersData : usersData.users || []);
+  
         const examsResponse = await fetch("/api/admin/exams", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        })
-        const examsData = await examsResponse.json()
-
-        setUsers(usersData)
-        setExams(examsData)
-        setIsLoading(false)
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const examsData = await examsResponse.json();
+        console.log("Exams data:", examsData);
+        setExams(Array.isArray(examsData) ? examsData : examsData.exams || []);
+  
+        setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching data:", error)
-        setIsLoading(false)
+        console.error("Error fetching data:", error);
+        setIsLoading(false);
       }
-    }
+    };
+  
+    fetchData();
+  }, [user]);
 
-    fetchData()
-  }, [user])
+  if (!Array.isArray(users)) {
+    console.warn("Users is not an array:", users);
+    return <div>Invalid user data</div>;
+  }
+  
 
   return (
     <div

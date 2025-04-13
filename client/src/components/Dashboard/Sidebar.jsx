@@ -42,24 +42,30 @@ const Sidebar = () => {
     if (user.role === "teacher") {
       return [
         { name: "Dashboard", path: "/teacher/dashboard", icon: Home },
-        { name: "Create Test", path: "/teacher/create-test", icon: BookOpen },
-        { name: "View Results", path: "/teacher/results", icon: BarChart2 },
-        { name: "Schedule", path: "/teacher/schedule", icon: Calendar },
-        { name: "Profile", path: "/teacher/profile", icon: User },
+        { name: "Create Test", path: "/teacher/dashboard/create-test", icon: BookOpen },
+        { name: "View Results", path: "/teacher/dashboard/view-results", icon: BarChart2 },
+        { name: "Schedule", path: "/teacher/dashboard/schedule", icon: Calendar },
+        { name: "Profile", path: "/teacher/dashboard/profile", icon: User },
       ];
     } else if (user.role === "student") {
       return [
         { name: "Dashboard", path: "/student/dashboard", icon: Home },
-        { name: "Take Test", path: "/student/take-test", icon: CheckSquare },
-        { name: "My Results", path: "/student/results", icon: BarChart2 },
-        { name: "My Learning", path: "#", icon: CheckSquare, subItems: [
-          { name: "Courses", path: "/student/courses" },
-          { name: "Progress", path: "/student/progress" },
-          { name: "Resources", path: "/student/resources" }
-        ]},
-        { name: "Schedule", path: "/student/schedule", icon: Calendar },
-        { name: "Profile", path: "/student/profile", icon: User },
-      ];
+        // If you have a test list page:
+        { name: "Take Test", path: "/student/dashboard/take-test", icon: CheckSquare },
+        { name: "My Results", path: "/student/dashboard/results", icon: BarChart2 },
+        {
+          name: "My Learning",
+          path: "#",
+          icon: CheckSquare,
+          subItems: [
+            { name: "Courses", path: "/student/dashboard/courses" },
+            { name: "Progress", path: "/student/dashboard/progress" },
+            { name: "Resources", path: "/student/dashboard/resources" },
+          ],
+        },
+        { name: "Profile", path: "/student/dashboard/profile", icon: User },
+      ]
+      
     }
     return [];
   }, [user]);
@@ -129,7 +135,7 @@ const Sidebar = () => {
               ) : (
                 <NavLink to={item.path} className={({ isActive }) =>
                   `group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg mb-1 ${
-                    isActive ? "bg-indigo-700 text-white" : "text-blue-200 hover:bg-blue-800 hover:text-white"
+                    location.pathname === item.path ? "bg-indigo-700 text-white" : "text-blue-200 hover:bg-blue-800 hover:text-white"
                   }`}>
                   {collapsed ? <item.icon size={20} /> : <>
                     <item.icon size={20} className="mr-3" />

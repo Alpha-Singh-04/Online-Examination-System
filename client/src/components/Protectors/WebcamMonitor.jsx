@@ -65,7 +65,7 @@ const WebcamMonitor = ({ onViolation }) => {
 
   const sendImageToBackend = async (imageData) => {
     try {
-      await fetch("http://your-backend-url/api/face-recognition", {
+      await fetch("http://localhost:5000/api/face-recognition", {
         method: "POST",
         body: JSON.stringify({ image: imageData }),
         headers: { "Content-Type": "application/json" },

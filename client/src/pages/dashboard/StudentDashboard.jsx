@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { getToken }  from '../../utils/auth';
 
 const StudentDashboard = () => {
   const [data, setData] = useState({
@@ -13,7 +14,12 @@ const StudentDashboard = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    axios.get('/api/student/dashboard')
+    const token = getToken()
+    axios.get('http://localhost:5000/api/student/dashboard' , {
+      headers: {
+        Authorization: `Bearer ${token}`, // Make sure you're passing the auth token if needed
+      } 
+    })
       .then(response => {
         setData(response.data);
         setIsLoading(false);

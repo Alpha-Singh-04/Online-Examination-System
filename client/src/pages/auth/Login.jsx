@@ -28,50 +28,55 @@ const Login = () => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [selectedRole, setSelectedRole] = useState('');
 
   const onSubmit = async (data) => {
-    setIsLoading(true);
-    setLoginError(""); // Clear any previous errors
     try {
-      const response = await api.post('/auth/login', data);
-  
-      if (!response || !response.data) {
-        throw new Error("Invalid response from server");
-      }
-  
-      const { token, role } = response.data;
-  
-      // Store token and role in localStorage
-      localStorage.setItem("token", token);
-      localStorage.setItem("role", role); // Store the role
-  
-      // Dispatch Redux login success
+      setLoginError('');
+      setIsLoading(true);
+      
+      // Include role in the data
+      const loginData = {
+        ...data,
+        role: selectedRole
+      };
+      
+      console.log("Selected Role:", selectedRole);
+      console.log("Form data being sent:", loginData);
+
+      const response = await api.post('/auth/login', loginData);
+      
+      console.log("Server response:", response.data);
+      console.log("User role from response:", response.data.role);
+
+      // Dispatch user data to Redux
       dispatch(loginSuccess(response.data));
-  
-      console.log("User Role:", role); // Debugging
-  
-      // Redirect based on role
-      if (role === "admin") {
-        navigate("/home", { replace: true });
-      } else if (role === "teacher") {
-        navigate("/teacher/dashboard", { replace: true });
-      } else if (role === "student") {
-        navigate("/student/dashboard", { replace: true });
-      } else {
-        throw new Error("Invalid role received from server");
+
+      // Navigate based on role
+      switch (response.data.role) {
+        case 'teacher':
+          console.log("Navigating to teacher dashboard");
+          navigate('/teacher/dashboard');
+          break;
+        case 'admin':
+          console.log("Navigating to admin dashboard");
+          navigate('/admin/dashboard');
+          break;
+        case 'student':
+          console.log("Navigating to student dashboard");
+          navigate('/student/dashboard');
+          break;
+        default:
+          setLoginError('Invalid role');
       }
-  
-    } catch (error) {
-      console.error("Login error:", error);
-      setLoginError(error.response?.data?.message || "Login failed");
-      dispatch(loginFailure(error.response?.data?.message || "Login failed"));
+    } catch (err) {
+      console.error('Login error:', err);
+      setLoginError(err.response?.data?.message || 'Failed to login');
+      dispatch(loginFailure(err.response?.data?.message || 'Failed to login'));
     } finally {
       setIsLoading(false);
     }
   };
-  
-  
-  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -83,6 +88,11 @@ const Login = () => {
           <p className="mt-2 text-center text-sm text-gray-600">
             Sign in to access your account
           </p>
+          {loginError && (
+            <p className="mt-2 text-center text-sm text-red-600">
+              {loginError}
+            </p>
+          )}
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="rounded-md space-y-4">
@@ -125,8 +135,10 @@ const Login = () => {
               <select
                 {...register("role", { required: "Role is required" })}
                 className="appearance-none rounded-lg relative block w-full pl-10 px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                defaultValue="" // Set default value to empty string
+                onChange={(e) => setSelectedRole(e.target.value)}
               >
-                <option value="">Select Role</option>
+                <option value="" disabled>Select Role</option>
                 <option value="student">Student</option>
                 <option value="teacher">Teacher</option>
                 <option value="admin">Admin</option>

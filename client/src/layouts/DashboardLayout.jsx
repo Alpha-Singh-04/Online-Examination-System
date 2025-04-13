@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Outlet, Navigate } from "react-router-dom";
+import { Outlet, Navigate, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Sidebar from '../components/dashboard/Sidebar';
 import Header from '../components/dashboard/Header';
 
 const DashboardLayout = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const { user } = useSelector((state) => state.auth);
   const [collapsed, setCollapsed] = useState(false); // ✅ Add state for collapsed sidebar
@@ -17,6 +18,23 @@ const DashboardLayout = () => {
     
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    // Push a new state to prevent back navigation
+    window.history.pushState(null, null, window.location.href);
+
+    const handleBack = (event) => {
+      event.preventDefault();
+      window.history.pushState(null, null, window.location.href);
+    };
+
+    // Listen for back navigation
+    window.addEventListener("popstate", handleBack);
+
+    return () => {
+      window.removeEventListener("popstate", handleBack);
+    };
+  }, [navigate]);
 
   if (loading) {
     return (

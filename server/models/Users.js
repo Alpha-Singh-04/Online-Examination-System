@@ -18,8 +18,23 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: ['student', 'teacher', 'admin'],
-    required: true,
     default: 'student'
+  },
+  profile: {
+    bio: String,
+    dateOfBirth: Date,
+    contactNumber: String,
+    address: String,
+    profilePicture: String, // Store Base64 image as a string
+    education: [{
+      institution: String,
+      degree: String,
+      year: Number
+    }],
+    lastUpdated: {
+      type: Date,
+      default: Date.now
+    }
   }
 }, {
   timestamps: true
@@ -28,10 +43,11 @@ const userSchema = new mongoose.Schema({
 // Hash password before saving
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
-    next();
+    return next();
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
 // Method to compare password

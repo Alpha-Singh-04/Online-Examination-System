@@ -8,13 +8,16 @@ import Login from './pages/auth/Login';
 import Dashboard from './pages/dashboard/Dashboard';
 import CreateTest from './pages/teacher/CreateTest';
 import TakeTest from './pages/student/TakeTest';
+import TestListPage from './pages/student/TestListPage';
 import AdminDashboard from './pages/dashboard/AdminDashboard';
 import TestMonitor from './components/TestMonitor';
 import ResultsDashboard from './pages/Results/ResultsDashboard';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import TeacherDashboard from './pages/dashboard/TeacherDashboard';
 import StudentDashboard from './pages/dashboard/StudentDashboard';
-
+import TeacherViewResult from './pages/teacher/TeacherViewResults';
+import TeacherSchedule from './pages/teacher/TeacherSchedule';
+import Profile from './pages/teacher/Profile';
 
 // Roles
 const ROLES = {
@@ -26,6 +29,7 @@ const ROLES = {
 // Function to handle redirection after login
 const RedirectToDashboard = () => {
   const { user } = useSelector((state) => state.auth);
+  console.log('redux user',user);
 
   if (!user) return <Navigate to="/login" replace />;
   
@@ -43,19 +47,16 @@ const RedirectToDashboard = () => {
   }
 };
 
-
-
 function App() {
   return (
     <Router>
       <Routes>
-
         {/* Public Route: Login */}
         <Route path="/login" element={<Login />} />
 
         {/* Wrap routes inside RootLayout correctly */}
         <Route path="/" element={<RootLayout />}>
-          <Route index element={<Home />} />  {/* This ensures Home is rendered inside RootLayout */}
+          <Route index element={<Home />} />
         </Route>
 
         {/* Redirect '/' to appropriate dashboard after authentication */}
@@ -81,7 +82,9 @@ function App() {
         >
           <Route index element={<TeacherDashboard />} />
           <Route path="create-test" element={<CreateTest />} />
-          <Route path="results" element={<ResultsDashboard />} />
+          <Route path="view-results" element={<TeacherViewResult />} />
+          <Route path="schedule" element={<TeacherSchedule />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
         <Route 
@@ -93,7 +96,9 @@ function App() {
           }
         >
           <Route index element={<StudentDashboard />} />
-          <Route path="take-test" element={<TakeTest />} />
+          <Route path="take-test" element={<TestListPage />} />
+          <Route path="take-test/:testId" element={<TakeTest />} />
+          <Route path="take-monitor" element={<TestMonitor />} />
           <Route path="results" element={<ResultsDashboard />} />
         </Route>
 

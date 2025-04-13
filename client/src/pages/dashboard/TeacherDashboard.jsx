@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { getTeacherDashboard } from '../../services/teacherService';
 
 const TeacherDashboard = () => {
   const [data, setData] = useState({
@@ -12,17 +12,20 @@ const TeacherDashboard = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    setIsLoading(true);
-    axios.get('/api/teacher/dashboard')
-      .then(response => {
-        setData(response.data);
+    const fetchDashboardData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await getTeacherDashboard();
+        setData(response); // Direct use of response since API returns data in the correct format
         setIsLoading(false);
-      })
-      .catch(error => {
+      } catch (error) {
         console.error('Error fetching teacher dashboard data:', error);
         setError('Failed to load dashboard data');
         setIsLoading(false);
-      });
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
   if (isLoading) return <div className="text-center p-4">Loading...</div>;
@@ -51,9 +54,19 @@ const TeacherDashboard = () => {
         <div className="bg-white rounded-lg shadow">
           {data.recentSubmissions?.length > 0 ? (
             <ul>
-              {data.recentSubmissions.map((submission, index) => (
-                <li key={index} className="p-4 border-b last:border-b-0">
-                  {submission}
+              {data.recentSubmissions.map((submission) => (
+                <li key={submission.id} className="p-4 border-b last:border-b-0">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h4 className="font-medium">{submission.title}</h4>
+                      <p className="text-gray-600">{submission.subject}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm">Students: {submission.studentsCount}</p>
+                      <p className="text-sm">Score: {submission.score}</p>
+                      <p className="text-sm">Status: {submission.status}</p>
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>

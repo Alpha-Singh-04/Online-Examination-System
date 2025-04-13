@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { createExam } from '../../services/examService';
+import { toast } from 'react-toastify';
 
 const TestDetails = ({ testData, handleTestDataChange }) => (
   <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -10,16 +11,35 @@ const TestDetails = ({ testData, handleTestDataChange }) => (
       <InputField label="Subject*" name="subject" value={testData.subject} onChange={handleTestDataChange} required />
     </div>
 
-  {/* Added teacher field */}
-  <InputField label="Teacher" name="teacher" value={testData.teacher} onChange={handleTestDataChange} />
-
-  {/* Added description field */}
-  <TextAreaField label="Description" name="description" value={testData.description} onChange={handleTestDataChange} rows="3" />
+    <InputField label="Teacher" name="teacher" value={testData.teacher} onChange={handleTestDataChange} />
+    <TextAreaField label="Description" name="description" value={testData.description} onChange={handleTestDataChange} rows="3" />
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
       <InputField label="Duration (minutes)*" name="duration" type="number" value={testData.duration} onChange={handleTestDataChange} min="1" required />
-      <InputField label="Start Time" name="startTime" type="datetime-local" value={testData.startTime} onChange={handleTestDataChange} />
-      <InputField label="End Time" name="endTime" type="datetime-local" value={testData.endTime} onChange={handleTestDataChange} />
+      <div>
+        <label className="block text-gray-700 mb-1">Start Time*</label>
+        <input
+          type="datetime-local"
+          name="startTime"
+          value={testData.startTime}
+          onChange={handleTestDataChange}
+          min={new Date().toISOString().slice(0, 16)}
+          className="w-full p-2 border rounded"
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-gray-700 mb-1">End Time*</label>
+        <input
+          type="datetime-local"
+          name="endTime"
+          value={testData.endTime}
+          onChange={handleTestDataChange}
+          min={testData.startTime || new Date().toISOString().slice(0, 16)}
+          className="w-full p-2 border rounded"
+          required
+        />
+      </div>
     </div>
     <TextAreaField label="Instructions" name="instructions" value={testData.instructions} onChange={handleTestDataChange} rows="3" />
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -61,26 +81,78 @@ const Question = ({ question, qIndex, handleQuestionChange, handleOptionChange, 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
       <div>
         <label className="block text-gray-700 mb-1">Question Type</label>
-        <select value={question.questionType} onChange={(e) => handleQuestionChange(qIndex, 'questionType', e.target.value)} className="w-full p-2 border rounded">
+        <select 
+          value={question.questionType} 
+          onChange={(e) => {
+            const newType = e.target.value;
+            handleQuestionChange(qIndex, 'questionType', newType);
+            // Reset options based on question type
+            if (newType === 'true-false') {
+              handleQuestionChange(qIndex, 'options', [
+                { text: 'True' },
+                { text: 'False' }
+              ]);
+            } else if (newType === 'written') {
+              handleQuestionChange(qIndex, 'options', []);
+            } else {
+              handleQuestionChange(qIndex, 'options', [
+                { text: '' },
+                { text: '' },
+                { text: '' },
+                { text: '' }
+              ]);
+            }
+          }} 
+          className="w-full p-2 border rounded"
+        >
           <option value="multiple-choice">Multiple Choice</option>
           <option value="true-false">True/False</option>
+          <option value="written">Written Answer</option>
         </select>
       </div>
       <InputField label="Marks" type="number" value={question.marks} onChange={(e) => handleQuestionChange(qIndex, 'marks', parseInt(e.target.value) || 1)} min="1" />
     </div>
-    <div className="mb-4">
-      <div className="flex justify-between items-center mb-2">
-        <label className="block text-gray-700">Options</label>
-        <button type="button" onClick={() => addOption(qIndex)} className="text-sm text-blue-500 hover:text-blue-700">Add Option</button>
-      </div>
-      {question.options.map((option, oIndex) => (
-        <div key={oIndex} className="flex items-center mb-2">
-          <input type="radio" name={`correct-${question.id}`} checked={question.correctAnswer === option.text} onChange={() => handleCorrectAnswerChange(qIndex, option.text)} className="mr-2" />
-          <input type="text" value={option.text} onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)} className="flex-1 p-2 border rounded" placeholder={`Option ${oIndex + 1}`} required />
-          <button type="button" onClick={() => removeOption(qIndex, oIndex)} className="ml-2 text-red-500 hover:text-red-700">X</button>
+    
+    {question.questionType !== 'written' && (
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-2">
+          <label className="block text-gray-700">Options</label>
+          {question.questionType === 'multiple-choice' && (
+            <button type="button" onClick={() => addOption(qIndex)} className="text-sm text-blue-500 hover:text-blue-700">Add Option</button>
+          )}
         </div>
-      ))}
-    </div>
+        {question.options.map((option, oIndex) => (
+          <div key={oIndex} className="flex items-center mb-2">
+            <input 
+              type="radio" 
+              name={`correct-${question.id}`} 
+              checked={question.correctAnswer === option.text} 
+              onChange={() => handleCorrectAnswerChange(qIndex, option.text)} 
+              className="mr-2" 
+            />
+            <input 
+              type="text" 
+              value={option.text} 
+              onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)} 
+              className="flex-1 p-2 border rounded" 
+              placeholder={`Option ${oIndex + 1}`} 
+              required 
+              disabled={question.questionType === 'true-false'}
+            />
+            {question.questionType === 'multiple-choice' && (
+              <button 
+                type="button" 
+                onClick={() => removeOption(qIndex, oIndex)} 
+                className="ml-2 text-red-500 hover:text-red-700"
+                disabled={question.options.length <= 2}
+              >
+                X
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    )}
   </div>
 );
 
@@ -113,10 +185,27 @@ const CreateTest = () => {
 
   const handleTestDataChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
-    setTestData(prevData => ({
-      ...prevData,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
+    setTestData(prevData => {
+      const newData = {
+        ...prevData,
+        [name]: type === 'checkbox' ? checked : value,
+      };
+      
+      // Validate end time is after start time
+      if (name === 'startTime' || name === 'endTime') {
+        if (newData.startTime && newData.endTime) {
+          const start = new Date(newData.startTime);
+          const end = new Date(newData.endTime);
+          if (end <= start) {
+            setError('End time must be after start time');
+          } else {
+            setError('');
+          }
+        }
+      }
+      
+      return newData;
+    });
   }, []);
 
   const handleQuestionChange = useCallback((index, field, value) => {
@@ -196,23 +285,34 @@ const CreateTest = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
-
+    
     try {
-      if (!testData.title || !testData.subject || !testData.duration) {
+      console.log('Submitting exam data:', testData); // Debug log
+      
+      if (!testData.title || !testData.subject || !testData.duration || !testData.startTime || !testData.endTime) {
         throw new Error('Please fill all required test fields');
       }
 
-      const validQuestions = questions.every(q => q.question.trim() !== '' && q.options.every(opt => opt.text.trim() !== ''));
+      const startTime = new Date(testData.startTime);
+      const endTime = new Date(testData.endTime);
+      if (endTime <= startTime) {
+        throw new Error('End time must be after start time');
+      }
+
+      const validQuestions = questions.every(q => {
+        if (q.question.trim() === '') return false;
+        if (q.questionType === 'written') return true;
+        return q.options.every(opt => opt.text.trim() !== '') && q.correctAnswer;
+      });
+
       if (!validQuestions) {
-        throw new Error('Please fill all question and option fields');
+        throw new Error('Please fill all question fields and select correct answers');
       }
 
       const testPayload = {
         ...testData,
-
-        startTime: new Date(testData.startTime), //  Ensured Date format
-        endTime: new Date(testData.endTime), //  Ensured Date format
-
+        startTime,
+        endTime,
         questions: questions.map(q => ({
           question: q.question,
           questionType: q.questionType,
@@ -222,13 +322,16 @@ const CreateTest = () => {
         })),
       };
 
-      const response = await axios.post('/api/tests', testPayload, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      navigate(`/teacher/tests/${response.data.testId}`);
+      console.log('Sending payload to server:', testPayload); // Debug log
+      const response = await createExam(testPayload);
+      console.log('Server response:', response); // Debug log
+      
+      toast.success('Exam created successfully!');
+      navigate(`/teacher/tests/${response.testId}`);
     } catch (err) {
+      console.error('Error creating exam:', err); // Debug log
       setError(err.message || 'Failed to create test. Please try again.');
+      toast.error(err.message || 'Failed to create test');
     } finally {
       setIsSubmitting(false);
     }
@@ -241,10 +344,7 @@ const CreateTest = () => {
       <form onSubmit={handleSubmit}>
         <TestDetails testData={testData} handleTestDataChange={handleTestDataChange} />
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Questions</h2>
-            <button type="button" onClick={addQuestion} className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded">Add Question</button>
-          </div>
+          <h2 className="text-xl font-semibold mb-4">Questions</h2>
           {questions.map((question, qIndex) => (
             <Question
               key={question.id}
@@ -258,6 +358,18 @@ const CreateTest = () => {
               removeQuestion={removeQuestion}
             />
           ))}
+          <div className="mt-6 flex justify-center">
+            <button 
+              type="button" 
+              onClick={addQuestion} 
+              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors duration-200"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+              Add New Question
+            </button>
+          </div>
         </div>
         <div className="flex justify-end">
           <button type="submit" disabled={isSubmitting} className="bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-lg font-medium text-lg disabled:opacity-50">

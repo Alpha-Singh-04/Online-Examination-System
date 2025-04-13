@@ -2,11 +2,11 @@ import { Users, BookOpen, CheckCircle, Calendar, ChevronRight } from "lucide-rea
 import { StatCard } from "./StatCard"
 import { RecentActivity } from "./RecentActivity"
 
-export const Overview = ({ isDarkMode, users, exams }) => {
+export const Overview = ({ isDarkMode, users, exams}) => {
   // Calculate metrics for dashboard
-  const activeUsers = users.filter((user) => user.status === "active").length || 0
-  const pendingExams = exams.filter((exam) => exam.status === "pending").length || 0
-  const completedExams = exams.filter((exam) => exam.status === "completed").length || 0
+  const activeUsers = users?.filter((user) => user.status === "active").length || 0
+  const pendingExams = exams?.filter((exam) => exam.status === "pending").length || 0
+  const completedExams = exams?.filter((exam) => exam.status === "completed").length || 0
 
   return (
     <div className="space-y-6">
@@ -61,14 +61,14 @@ const UpcomingExams = ({ isDarkMode, exams }) => {
             </tr>
           </thead>
           <tbody>
-            {exams.slice(0, 3).map((exam, index) => (
+            {exams?.slice(0, 3).map((exam, index) => (
               <tr
                 key={exam._id || index}
                 className={`border-b ${isDarkMode ? "border-white/10" : "border-gray-100"} hover:${
                   isDarkMode ? "bg-white/5" : "bg-gray-50"
                 }`}
               >
-                <td className="py-3 px-2">{exam.title || `Exam ${index + 1}`}</td>
+                <td className="py-3 px-2">{exam?.title || `Exam ${index + 1}`}</td>
                 <td className="py-3 px-2">{exam.subject || "General"}</td>
                 <td className="py-3 px-2">
                   <div className="flex items-center gap-1">
