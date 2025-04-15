@@ -43,9 +43,10 @@ export const getProfile = async () => {
 
 export const updateProfilePicture = async (base64Image) => {
   try {
-    const response = await api.put('/auth/profile/picture', { image: base64Image });
+    const response = await api.put('/auth/profile/picture', { profilePicture: base64Image });
     return response.data;
   } catch (error) {
+    console.log('Error updating profile picture:', error);
     throw error.response?.data || error;
   }
 };

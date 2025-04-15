@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Search, Settings, HelpCircle } from 'lucide-react';
 import PropTypes from 'prop-types';
-import { useProfile } from '../../hooks/useProfile';
 
 const NotificationDropdown = ({ isOpen, notifications, onClearNotifications }) => (
   isOpen && (
@@ -107,7 +106,7 @@ ProfileDropdown.propTypes = {
 const Header = ({ collapsed }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { profile } = useProfile();
+  const profile = useSelector((state) => state.profile.data);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
@@ -251,14 +250,17 @@ const Header = ({ collapsed }) => {
                 className="flex items-center space-x-2 focus:outline-none"
               >
                 <span className="text-sm capitalize">{profile?.name}</span>
-                <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center uppercase">
-                  {profile?.name?.charAt(0)}
-                </div>
+                <img 
+                  src={profile?.profile?.profilePicture || '/default-avatar.png'}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
               </button>
               <ProfileDropdown 
                 isOpen={isProfileOpen} 
                 onLogout={handleLogout} 
                 userName={profile?.name || 'User'}
+                profile={profile}
               />
             </div>
           </div>

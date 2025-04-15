@@ -1,22 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  UserIcon, 
-  LockIcon, 
-  MailIcon, 
-  CalendarIcon, 
-  GraduationCapIcon, 
-  EditIcon, 
-  SaveIcon, 
-  CameraIcon, 
-  ChevronRightIcon, 
-  AwardIcon,
-  BarChart2Icon, 
-  ClockIcon 
-} from 'lucide-react';
+import { CameraIcon, ClockIcon } from 'lucide-react';
 import axios from 'axios';
+
 import { getPlaceholderImage } from '../../services/placeholderService';
-import { updateProfilePicture } from '../../services/api';
 import { getToken, isAuthenticated, removeToken } from '../../utils/auth';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProfile, updateProfilePicture, updateProfileName } from '../../redux/features/profileSlice';
+
 
 // Create axios instance with base URL and default headers
 const api = axios.create({
@@ -44,17 +34,12 @@ api.interceptors.request.use(
 );
 
 const Profile = () => {
-  const [user, setUser] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    profilePicture: null
-  });
-
+  const dispatch = useDispatch();
+  const profile = useSelector((state) => state.profile.data);
   const [isEditing, setIsEditing] = useState(false);
-  const [profileImage, setProfileImage] = useState(null);
   const [formData, setFormData] = useState({
-    name: user.name,
-    email: user.email,
+    name: '',
+    email: '',
     examRole: '',
     dateOfBirth: '',
     currentPassword: '',
@@ -69,109 +54,74 @@ const Profile = () => {
     performanceProgress: 72
   });
 
+
   const [error, setError] = useState(null);
 
   // Add loading state
   const [isUploading, setIsUploading] = useState(false);
-
+  
   // Fetch user profile data when component mounts
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        if (!isAuthenticated()) {
-          console.log('No auth token available');
-          setError('Please login to view your profile');
-          return;
-        }
+    dispatch(fetchProfile());
+  }, [dispatch]);
 
-        console.log("Attempting to fetch profile with token:", getToken());
-
-        const response = await api.get('/api/auth/profile');
-        console.log("Profile response:", response.data);
-        
-        const userData = response.data;
-        setUser(prev => ({
-          ...prev,
-          name: userData.name,
-          email: userData.email,
-          profilePicture: getImageUrl(userData.profilePicture)
-        }));
-        setProfileImage(getImageUrl(userData.profilePicture));                
-        setFormData(prev => ({
-          ...prev,
-          name: userData.name,
-          email: userData.email
-        }));
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-        if (error.response?.status === 401) {
-          setError('Session expired. Please login again.');
-          removeToken(); // Use auth utility to remove token
-        } else {
-          setError(error.response?.data?.message || 'Failed to fetch profile data');
-        }
-      }
-    };
-
-    fetchUserProfile();
-  }, []);
-
-  // Add cleanup for object URLs
   useEffect(() => {
-    // Cleanup function to revoke object URLs
-    return () => {
-      if (profileImage && profileImage.startsWith('blob:')) {
-        URL.revokeObjectURL(profileImage);
-      }
-    };
-  }, [profileImage]);
+    if (profile) {
+      setFormData(prev => ({
+        ...prev,
+        name: profile.name,
+        email: profile.email
+      }));
+    }
+  }, [profile]);
+  
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-
+  
     if (!isAuthenticated()) {
-        setError('Please login to upload a profile picture');
-        return;
+      setError('Please login to upload a profile picture');
+      return;
     }
     if (!file) {
-        setError("No file selected");
-        return;
+      setError("No file selected");
+      return;
     }
-
+  
     try {
-        if (!file.type.startsWith("image/")) {
-            setError("Please upload a valid image file.");
-            return;
+      if (!file.type.startsWith("image/")) {
+        setError("Please upload a valid image file.");
+        return;
+      }
+  
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = async () => {
+        const base64String = reader.result;
+  
+        console.log("Uploading Base64:", base64String.slice(0, 50));
+  
+        try {
+          const response = await updateProfilePicture(base64String);
+          console.log("Response:", response);
+  
+          if (response.profilePicture) {
+            console.log('Dispatching updateProfilePicture with payload:', response.profilePicture);
+            dispatch(updateProfilePicture(response.profilePicture)); // Update Redux profile state
+          } else {
+            setError("Failed to update profile picture.");
+          }
+        } catch (error) {
+          console.error("Upload error:", error);
+          setError("Failed to upload profile picture.");
         }
-
-        // Convert file to Base64
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onloadend = async () => {
-            const base64String = reader.result; // Keep full Base64 string
-    
-            console.log("Uploading Base64:", base64String.slice(0, 50)); // Debug log
-    
-            try {
-                const response = await updateProfilePicture(base64String); // Use API function
-    
-                console.log("Response:", response);
-    
-                if (response.profilePicture) {
-                    setProfileImage(response.profilePicture); // Update state with new image
-                } else {
-                    setError("Failed to update profile picture.");
-                }
-            } catch (error) {
-                console.error("Upload error:", error);
-                setError("Failed to upload profile picture.");
-            }
-        };
+      };
     } catch (error) {
-        console.error("Error processing file:", error);
-        setError("Unexpected error occurred.");
+      console.error("Error processing file:", error);
+      setError("Unexpected error occurred.");
     }
   };
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -188,17 +138,16 @@ const Profile = () => {
         setError('Please login to update profile');
         return;
       }
-
+  
       const response = await api.put('/api/auth/profile', {
         name: formData.name,
         currentPassword: formData.currentPassword,
         newPassword: formData.newPassword
       });
-
-      setUser(prev => ({
-        ...prev,
-        name: response.data.name
-      }));
+  
+      // Update Redux store
+      dispatch(updateProfileName(response.data.name));
+  
       setIsEditing(false);
       setFormData(prev => ({
         ...prev,
@@ -206,26 +155,29 @@ const Profile = () => {
         newPassword: '',
         confirmPassword: ''
       }));
+  
     } catch (error) {
       console.error('Error updating profile:', error);
       setError(error.response?.data?.message || 'Failed to update profile');
     }
   };
+  
 
   const getImageUrl = (imagePath) => {
-    if (!imagePath) return getPlaceholderImage(128, 128);
-    return imagePath.includes("data:image")
-      ? imagePath // Already formatted correctly
+    if (!imagePath) return "/default-avatar.png";
+    return imagePath.startsWith("data:image")
+      ? imagePath
       : `data:image/png;base64,${imagePath}`;
   };
-
+  
+  
   
 
   const renderProfileImageUploader = () => (
     <div className="relative group">
       <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden">
         <img 
-          src={getImageUrl(profileImage || user.profilePicture)} 
+          src={getImageUrl(profile?.profilePicture)} 
           alt="Profile" 
           className={`w-full h-full object-cover group-hover:opacity-70 transition-all duration-300 ${
             isUploading ? 'opacity-50' : ''
@@ -309,8 +261,8 @@ const Profile = () => {
             <div className="flex items-center space-x-6 mb-6">
               {renderProfileImageUploader()}
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
-                <p className="text-gray-600">{user.email}</p>
+                <h2 className="text-2xl font-bold text-gray-900">{profile?.name}</h2>
+                <p className="text-gray-600">{profile?.email}</p>
               </div>
             </div>
             

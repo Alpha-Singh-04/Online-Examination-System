@@ -146,6 +146,16 @@ const updateProfilePicture = async (req, res) => {
   try {
       const { profilePicture } = req.body;
 
+      // Check if image data exists
+    if (!profilePicture) {
+      return res.status(400).json({ message: "No image provided." });
+    }
+
+    // Validate Base64 image format (JPEG, PNG, GIF)
+    if (!profilePicture.startsWith('data:image/')) {
+      return res.status(400).json({ message: "Invalid image format. Must be a Base64-encoded image string." });
+    }
+
       // Validate Base64 format
       if (!profilePicture || !/^data:image\/(jpeg|png|gif);base64,/.test(profilePicture)) {
           return res.status(400).json({ message: "Invalid image format. Use Base64 encoded JPEG, PNG, or GIF." });
@@ -161,7 +171,7 @@ const updateProfilePicture = async (req, res) => {
 
       res.status(200).json({
           message: "Profile picture updated!",
-          profilePicture,
+          profilePicture: user.profile.profilePicture,
       });
   } catch (error) {
       console.error("Error updating profile picture:", error);
